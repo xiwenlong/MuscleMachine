@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 8312aec378a160e43ab9622ba1e44d4e
+timeCreated: 1542447595
+licenseType: Pro
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: FZMiaoWuS
+  fontNames:
+  - FZMiaoWuS
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: cb0b97ce312f228428a2f493b0e734aa, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

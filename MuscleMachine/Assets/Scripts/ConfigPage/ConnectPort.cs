@@ -94,7 +94,7 @@ public class ConnectPort : MonoBehaviour
         _connectBtn.onClick.AddListener(() => DisConnect());
     }
 
-    private void DisConnect()
+    public void DisConnect()
     {
         //关闭链接
         IsReceiveData = false;

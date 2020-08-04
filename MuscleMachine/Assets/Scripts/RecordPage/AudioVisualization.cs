@@ -32,7 +32,8 @@ public class AudioVisualization : MonoBehaviour
     private Thread _dealThread;
     private bool _isDealData;
 
-    private float[] _linePointPos;       //保存每一个点的原始y值
+    private float[] _linePointPosY;       //保存每一个点的原始y值
+    private float _linePointZ;
 
     private Button _plusBtn;
     private Button _minusBtn;
@@ -40,7 +41,7 @@ public class AudioVisualization : MonoBehaviour
     private void OnEnable()
     {
         _isOn = true;
-
+        _linePointZ = 100;
         //根据选择的通道总数和当前所在下标，确定位置
         int num = int.Parse(transform.parent.name[transform.parent.name.Length - 1].ToString());
         //int count = int.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_SerialChannelCount));
@@ -53,9 +54,11 @@ public class AudioVisualization : MonoBehaviour
         //    transform.parent.gameObject.SetActive(false);
         //    return;
         //}
+        GameObject.Find(ConstTable.Instance.R_TextInfo).GetComponent<Text>().text = "";
+
 
         _scaleFactor = 1;
-        _linePointPos = new float[R_audioDataLength];
+        _linePointPosY = new float[R_audioDataLength];
         _parentStartPosY = transform.parent.GetComponent<LineRenderer>().GetPosition(0).y;
         _audioSource = GetComponent<AudioSource>();//获取声源组件   
         _linerenderer = GetComponent<LineRenderer>();//获取画线组件 
@@ -82,8 +85,8 @@ public class AudioVisualization : MonoBehaviour
         //初始化所有点的起始位置
         for (int i = 0; i <= R_audioDataLength - 1; i++)
         {
-            _linePointPos[i] = _parentStartPosY + _offsetY;
-            Vector3 startPos = new Vector3(transform.position.x + i * intervalX, _linePointPos[i], transform.position.z);
+            _linePointPosY[i] = _parentStartPosY + _offsetY;
+            Vector3 startPos = new Vector3(transform.position.x + i * intervalX, _linePointPosY[i], _linePointZ);
             _linerenderer.SetPosition(i, startPos);
         }
         StartCoroutine("Fixed");
@@ -119,7 +122,7 @@ public class AudioVisualization : MonoBehaviour
             double[] OtherDataZH = ShowDaiTong();
             int[] DataListZH = DealPortData(OtherDataZH).ToArray();
 
-            float intervalX = IntervalSlider.value / 1000f;
+            float intervalX = (1000f - IntervalSlider.value + 1) / 1000f;
             IntervalSliderText.text = (int)IntervalSlider.value + "ms";
             float rightPos = 6.4f;
             for (int i = 0; i <= OtherDataZH.Length - 1; i++)
@@ -128,17 +131,17 @@ public class AudioVisualization : MonoBehaviour
                 for (int k = 0; k <= R_audioDataLength - 2; k++)
                 {
                     float posX = rightPos - (R_audioDataLength - 2 - k) * intervalX;
-                    _linePointPos[k] = _linePointPos[k + 1];
-                    Vector2 newPos = new Vector2(posX, _parentStartPosY + _linePointPos[k] * _scaleFactor + _offsetY/*_linerenderer.GetPosition(k + 1).y*/);
+                    _linePointPosY[k] = _linePointPosY[k + 1];
+                    Vector3 newPos = new Vector3(posX, _parentStartPosY + _linePointPosY[k] * _scaleFactor + _offsetY, _linePointZ);
                     _linerenderer.SetPosition(k, newPos);
                 }
                 //重新设置最右侧点的值
                 //float x = _linerenderer.GetPosition(255).x;
                 float x = rightPos;
                 //Debug.Log(OtherDataZH[i] + " " + DataListZH[i]);
-                _linePointPos[R_audioDataLength - 1] = Mathf.Clamp(DataListZH[i]/* * 10f*/, -100, 100);
+                _linePointPosY[R_audioDataLength - 1] = Mathf.Clamp(DataListZH[i]/* * 10f*/, -100, 100);
                 Vector3 cubePos = new Vector3(x,
-                    _parentStartPosY + _linePointPos[R_audioDataLength - 1] * _scaleFactor + _offsetY,
+                    _parentStartPosY + _linePointPosY[R_audioDataLength - 1] * _scaleFactor + _offsetY,
                     _linerenderer.GetPosition(R_audioDataLength - 1).z);
                 //画线 
                 _linerenderer.SetPosition(R_audioDataLength - 1, cubePos);
@@ -146,6 +149,8 @@ public class AudioVisualization : MonoBehaviour
             }
             yield return null;
         }
+        //清除所有线的内容
+        _linerenderer.positionCount = 0;
     }
 
     /// <summary>

@@ -43,6 +43,8 @@ public class ConstTable : MonoBehaviour
     public readonly string R_RefreshBtn = "Btn_Refresh";
     public readonly string R_Exit = "Btn_Exit";
     public readonly string R_WaveTime = "WaveTime";
+    public readonly string R_TextInfo = "Text_Info";
+
 
     public readonly string R_TextLow = "Text_Low";
     public readonly string R_TextHigh = "Text_High";

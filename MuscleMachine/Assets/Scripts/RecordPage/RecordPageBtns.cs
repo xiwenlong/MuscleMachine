@@ -15,6 +15,7 @@ using UnityEngine.Video;
 
 public class RecordPageBtns : MonoBehaviour
 {
+    public Sprite[] PlayOrPuseImage;
     public GameObject VideoImage;
 
     public Button _configBtn;
@@ -26,9 +27,11 @@ public class RecordPageBtns : MonoBehaviour
     public Button _exitBtn;
     private VideoPlayer _videoPlayer;
     private RawImage _rawImage;
+    private bool _isPlay;
 
     private void Start()
     {
+        _isPlay = false;
         _configBtn = transform.Find(ConstTable.Instance.R_configBtn).GetComponent<Button>();
         _exportBtn = transform.Find(ConstTable.Instance.R_exportBtn).GetComponent<Button>();
         _recordBtn = transform.Find(ConstTable.Instance.R_recordBtn).GetComponent<Button>();
@@ -77,6 +80,7 @@ public class RecordPageBtns : MonoBehaviour
     /// </summary>
     private void ImportMovie()
     {
+        transform.Find(ConstTable.Instance.R_TextInfo).GetComponent<Text>().text = "";
         OpenFileName pth = new OpenFileName();
         pth.structSize = Marshal.SizeOf(pth);
         //pth.filter = "All files (*.*)|*.*";
@@ -99,9 +103,9 @@ public class RecordPageBtns : MonoBehaviour
         }
         if (filePath != "")
         {
-            VideoImage.SetActive(true);
             _videoPlayer.url = filePath;
             InvalidOtherBtn();
+            VideoImage.SetActive(true);
         }
     }
 
@@ -110,8 +114,15 @@ public class RecordPageBtns : MonoBehaviour
     /// </summary>
     private void InvalidOtherBtn()
     {
-        _recordBtn.interactable = false;
-        _importBtn.interactable = false;
+        _recordBtn.gameObject.SetActive(false);
+        _importBtn.gameObject.SetActive(false);
+        _configBtn.gameObject.SetActive(false);
+        _exportBtn.gameObject.SetActive(false);
+        for (int i = 0; i <= transform.parent.childCount - 1; i++)
+        {
+            transform.parent.GetChild(i).gameObject.SetActive(false);
+        }
+        gameObject.SetActive(true);
     }
 
     /// <summary>
@@ -119,8 +130,14 @@ public class RecordPageBtns : MonoBehaviour
     /// </summary>
     private void ValidOtherBtn()
     {
-        _recordBtn.interactable = true;
-        _importBtn.interactable = true;
+        _recordBtn.gameObject.SetActive(true);
+        _importBtn.gameObject.SetActive(true);
+        _configBtn.gameObject.SetActive(true);
+        _exportBtn.gameObject.SetActive(true);
+        for (int i = 0; i <= transform.parent.childCount - 1; i++)
+        {
+            transform.parent.GetChild(i).gameObject.SetActive(true);
+        }
     }
 
     private void Update()
@@ -132,16 +149,26 @@ public class RecordPageBtns : MonoBehaviour
 
     private void PlayVideo()
     {
-        if (VideoImage.activeSelf == true)
+        if (VideoImage.activeSelf == true && !_isPlay)
+        {
             _videoPlayer.Play();
+            _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[1];
+            _isPlay = !_isPlay;
+        }
+        else if(VideoImage.activeSelf == true && _isPlay)
+        {
+            _videoPlayer.Pause();
+            _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[0];
+            _isPlay = !_isPlay;
+        }
     }
 
     private void ExitVideo()
     {
         if (VideoImage.activeSelf == true)
         {
-            VideoImage.SetActive(false);
             ValidOtherBtn();
+            VideoImage.SetActive(false);
         }
     }
 

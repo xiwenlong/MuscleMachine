@@ -72,6 +72,7 @@
     <Compile Include="Assets\Scripts\RecordPage\RecordPageBtns.cs" />
     <Compile Include="Assets\Scripts\StartSoftWare.cs" />
     <Compile Include="Assets\Scripts\UnitImpulseReact.cs" />
+    <Compile Include="Assets\Scripts\WindowMaxAndMin.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>F:/Study/selfGame/Game/MuscleMachine/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

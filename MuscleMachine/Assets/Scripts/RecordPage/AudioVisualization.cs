@@ -16,68 +16,75 @@ using UnityEngine.UI;
 public class AudioVisualization : MonoBehaviour
 {
     //private readonly int R_linePoints = 64;             //一次显示64个点
-    private readonly int R_audioDataLength = 1200;
-    private readonly string R_ImgPlus = "Img_Plus";
-    private readonly string R_ImgMinus = "Img_Minus";
+    private readonly int R_audioDataLength = 200;
+    private readonly string R_Img = "Img";
+    private readonly string R_ImgArrow = "Img/Img_Arrow";
+    private readonly string R_ImgPlus = "Img/Img_Plus";
+    private readonly string R_ImgMinus = "Img/Img_Minus";
 
     public Slider IntervalSlider;
     public Text IntervalSliderText;
 
+    private int _channelIndex;
     private float _scaleFactor;             //缩放系数
     private float _parentStartPosY;      //父物体射线起始y值
     private float _offsetY;
-    private bool _isOn;
     private AudioSource _audioSource;    //声源 
     private LineRenderer _linerenderer;  //画线  
     private Thread _dealThread;
     private bool _isDealData;
+    private bool _isShowChangeBtn;       //是否显示上下的缩放按钮
 
     private float[] _linePointPosY;       //保存每一个点的原始y值
+    //private float _startLinePointY;
     private float _linePointZ;
 
+    private Button _arrowBtn;
     private Button _plusBtn;
     private Button _minusBtn;
 
+    private void Start()
+    {
+        //_parentStartPosY = transform.parent.GetComponent<LineRenderer>().GetPosition(0).y;
+        _arrowBtn = transform.parent.Find(R_ImgArrow).GetComponent<Button>();
+        _plusBtn = transform.parent.Find(R_ImgPlus).GetComponent<Button>();
+        _minusBtn = transform.parent.Find(R_ImgMinus).GetComponent<Button>();
+        _arrowBtn.onClick.AddListener(() => ShowOrHideChangeBtn());
+        _plusBtn.onClick.AddListener(() => ChangeScaleFactor(1));
+        _minusBtn.onClick.AddListener(() => ChangeScaleFactor(-1));
+        _plusBtn.gameObject.SetActive(false);
+        _minusBtn.gameObject.SetActive(false);
+    }
     private void OnEnable()
     {
-        _isOn = true;
         _linePointZ = 100;
         //根据选择的通道总数和当前所在下标，确定位置
-        int num = int.Parse(transform.parent.name[transform.parent.name.Length - 1].ToString());
-        //int count = int.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_SerialChannelCount));
-        //count = 1;
-        //int middle = Mathf.CeilToInt(count / 2f);
-        //_offsetY = 0.6f + (1.2f * (num <= middle ? middle - num : middle - num));
-        //if (num > count)  //当前下标超过最大显示通道数，则不显示
-        //{
-        //    _isOn = false;
-        //    transform.parent.gameObject.SetActive(false);
-        //    return;
-        //}
+        _channelIndex = int.Parse(transform.parent.name[transform.parent.name.Length - 1].ToString());
+        int count = int.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_SerialChannelCount));
+        count = 6;
+        int middle = Mathf.CeilToInt(count / 2f);
+        _offsetY = 0.8f + (1.2f * (_channelIndex <= middle ? middle - _channelIndex : middle - _channelIndex));
+        //_offsetY = 0;
         GameObject.Find(ConstTable.Instance.R_TextInfo).GetComponent<Text>().text = "";
 
 
         _scaleFactor = 1;
         _linePointPosY = new float[R_audioDataLength];
-        _parentStartPosY = transform.parent.GetComponent<LineRenderer>().GetPosition(0).y;
         _audioSource = GetComponent<AudioSource>();//获取声源组件   
         _linerenderer = GetComponent<LineRenderer>();//获取画线组件 
         _linerenderer.positionCount = R_audioDataLength;//设定线段的片段数量 
 
-        _plusBtn = transform.parent.Find(R_ImgPlus).GetComponent<Button>();
-        _minusBtn = transform.parent.Find(R_ImgMinus).GetComponent<Button>();
-        _plusBtn.onClick.AddListener(() => ChangeScaleFactor(1));
-        _minusBtn.onClick.AddListener(() => ChangeScaleFactor(-1));
 
         //加载线条的材质
         string[] colorName = PlayerPrefs.GetString(ConstTable.Instance.R_P_SerialChannelColor).Split(',');
-        _linerenderer.material = Resources.Load<Material>(ConstTable.Instance.R_Material + "/" + colorName[num - 1]);
+        _linerenderer.material = Resources.Load<Material>(ConstTable.Instance.R_Material + "/" + colorName[_channelIndex - 1]);
 
         //画出基准线
         LineRenderer parentLine = transform.parent.GetComponent<LineRenderer>();
-        parentLine.SetPosition(0, new Vector3(parentLine.GetPosition(0).x, parentLine.GetPosition(0).y + _offsetY, parentLine.GetPosition(0).z));
-        parentLine.SetPosition(1, new Vector3(parentLine.GetPosition(1).x, parentLine.GetPosition(1).y + _offsetY, parentLine.GetPosition(1).z));
-
+        parentLine.SetPosition(0, new Vector3(parentLine.GetPosition(0).x, _parentStartPosY + _offsetY, parentLine.GetPosition(0).z));
+        parentLine.SetPosition(1, new Vector3(parentLine.GetPosition(1).x, _parentStartPosY + _offsetY, parentLine.GetPosition(1).z));
+        parentLine.material = Resources.Load<Material>(ConstTable.Instance.R_Material + "/" + colorName[_channelIndex - 1]);
+        transform.parent.Find(R_Img).transform.position = new Vector3(0, parentLine.GetPosition(0).y,0);
         //将脚本所挂载的gameobject向左移动，使得生成的物体中心正对摄像机 
         transform.position = new Vector3(-R_audioDataLength * 0.5f * 0.05f, transform.position.y, transform.position.z);
 
@@ -103,49 +110,91 @@ public class AudioVisualization : MonoBehaviour
         _dealThread = null;
     }
 
+    private void ShowOrHideChangeBtn()
+    {
+        if (!_isShowChangeBtn)
+        {
+            _isShowChangeBtn = !_isShowChangeBtn;
+            _plusBtn.gameObject.SetActive(true);
+            _minusBtn.gameObject.SetActive(true);
+        }
+        else
+        {
+            _isShowChangeBtn = !_isShowChangeBtn;
+            _plusBtn.gameObject.SetActive(false);
+            _minusBtn.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// 波形图放大缩小
+    /// </summary>
+    /// <param name="factor"></param>
     private void ChangeScaleFactor(int factor)
     {
         if (factor == 1)
         {
-            _scaleFactor *= 1.2f;
+            if (_scaleFactor < 6.12f)  //6.12大约是1.2^10
+                _scaleFactor *= 1.2f;
         }
         else
         {
-            _scaleFactor /= 1.2f;
+            if (_scaleFactor > 0.15)   // 1/1.2...
+                _scaleFactor /= 1.2f;
         }
     }
 
+
+    /// <summary>
+    /// 绘制波形
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator Fixed()
     {
         while (ConnectPort.Instance.IsReceiveData)
         {
             double[] OtherDataZH = ShowDaiTong();
             int[] DataListZH = DealPortData(OtherDataZH).ToArray();
-
-            float intervalX = (1000f - IntervalSlider.value + 1) / 1000f;
-            IntervalSliderText.text = (int)IntervalSlider.value + "ms";
+ 
+            //Debug.Log(IntervalSliderText.text + " " + OtherDataZH.Length + " " + DataListZH.Length+" "+_channelIndex);
+            int interval = 10;     //每次10个点向左移动
             float rightPos = 6.4f;
-            for (int i = 0; i <= OtherDataZH.Length - 1; i++)
+            for (int i = 0; i <= DataListZH.Length - 1; i+=10)
             {
+                if (DataListZH.Length - 1 - i >= 10)
+                    interval = 10;
+                else
+                    interval = DataListZH.Length - 1 - i;
+
+                float intervalX = (1000f - IntervalSlider.value + 1) / 1000f;
+                IntervalSliderText.text = (int)IntervalSlider.value + "ms";
+
+            //Debug.Log(_parentStartPosY+" "+ _offsetY+" "+ _linePointPosY[0] * _scaleFactor);
                 //所有点向左平移一个位置
-                for (int k = 0; k <= R_audioDataLength - 2; k++)
+                for (int k = 0; k <= R_audioDataLength - 2 - interval; k++)
                 {
                     float posX = rightPos - (R_audioDataLength - 2 - k) * intervalX;
-                    _linePointPosY[k] = _linePointPosY[k + 1];
+                    _linePointPosY[k] = _linePointPosY[k + interval];
                     Vector3 newPos = new Vector3(posX, _parentStartPosY + _linePointPosY[k] * _scaleFactor + _offsetY, _linePointZ);
                     _linerenderer.SetPosition(k, newPos);
                 }
+                int flagIndex = 0;
                 //重新设置最右侧点的值
-                //float x = _linerenderer.GetPosition(255).x;
-                float x = rightPos;
-                //Debug.Log(OtherDataZH[i] + " " + DataListZH[i]);
-                _linePointPosY[R_audioDataLength - 1] = Mathf.Clamp(DataListZH[i]/* * 10f*/, -100, 100);
-                Vector3 cubePos = new Vector3(x,
-                    _parentStartPosY + _linePointPosY[R_audioDataLength - 1] * _scaleFactor + _offsetY,
-                    _linerenderer.GetPosition(R_audioDataLength - 1).z);
-                //画线 
-                _linerenderer.SetPosition(R_audioDataLength - 1, cubePos);
-                yield return null;
+                for (int k = R_audioDataLength - 1 - interval; k <= R_audioDataLength - 1; k++)
+                {
+                    float posX = rightPos - (R_audioDataLength - 1 - k) * intervalX;
+                    _linePointPosY[k] = Mathf.Clamp((DataListZH[i + flagIndex]) / 10f, -100, 100);
+                    //Debug.Log(OtherDataZH[i + flagIndex] + " " + DataListZH[i + flagIndex]);
+
+                    flagIndex = (flagIndex + 1) % (interval + 1);
+                    Vector3 cubePos = new Vector3(posX,
+                        _parentStartPosY + _linePointPosY[k] * _scaleFactor + _offsetY,
+                        _linerenderer.GetPosition(k).z);
+                    //画线 
+                    _linerenderer.SetPosition(k, cubePos);
+
+            }
+            yield return null;
             }
             yield return null;
         }
@@ -158,7 +207,6 @@ public class AudioVisualization : MonoBehaviour
     /// </summary>
     private List<int> DealPortData(double[] data)
     {
-        //List<int> receiveDataList = ReceiveData.ReceiveDataList;
         List<double> receiveDataList = new List<double>(data);
 
         double[] D = new double[receiveDataList.Count];
@@ -200,7 +248,6 @@ public class AudioVisualization : MonoBehaviour
         W2 = 0;
         W3 = 0;
 
-        //Debug.Log(receiveDataList.Count);
         int[] D3 = D2;
         for (int i = 2; i <= receiveDataList.Count - 4; i++)
         {
@@ -218,31 +265,51 @@ public class AudioVisualization : MonoBehaviour
                 DataListZH.Add(-M[0]);
             else
                 DataListZH.Add(M[0]);
-            //if(M[0]>=90||-M[0]<=-90)
-            //Debug.Log(DataListZH[DataListZH.Count - 1] + " " + D3[i] + " " + receiveDataList[i].ToString("X2")+" "+ receiveDataList[i]);
+            //Debug.Log(M[0] + " " + DataListZH[DataListZH.Count - 1] + " " + data[i]);
+            //Debug.Log(DataListZH[DataListZH.Count - 1] + " " + D3[i] + " "  + receiveDataList[i] + " " + M[0]);
+
         }
-        ReceiveData.DealDataList.AddRange(DataListZH);
+        ReceiveData.DealDataList[_channelIndex].AddRange(DataListZH);
         //Debug.Log(DataListZH.Count + " " + ReceiveData.DealDataList.Count);
         return DataListZH;
     }
 
     private double[] ShowDaiTong()
     {
-        int[] data = ReceiveData.ReceiveDataList.ToArray();
+        //获得指定通道的数据
+        //Debug.Log("data0:" + ReceiveData.ReceiveDataList[0].Count);
+        //Debug.Log("data1:" + ReceiveData.ReceiveDataList[1].Count);
+        //Debug.Log("data2:" + ReceiveData.ReceiveDataList[2].Count);
+        //Debug.Log("data3:" + ReceiveData.ReceiveDataList[3].Count);
+        //Debug.Log("data4:" + ReceiveData.ReceiveDataList[4].Count);
+        //Debug.Log("data5:" + ReceiveData.ReceiveDataList[5].Count);
+        int[] data = new int[ReceiveData.ReceiveDataList[_channelIndex].Count];
+        string str = "";
+        string str2 = "";
+;        for (int i = 0;i <= data.Length - 1; i++)
+        {
+            data[i] = ReceiveData.ReceiveDataList[_channelIndex][i];
+            //str += data[i] + " ";
+        }
+        //Debug.Log("de:"+str);
+        ReceiveData.ReceiveDataList[_channelIndex].Clear();
         //double[] g = GetFilterDaiTong(0.03 * Math.PI, 0.05 * Math.PI, out int num);
         float left = float.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_BandPassFilter).Split(',')[0]);
         float right = float.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_BandPassFilter).Split(',')[1]);
-        //Debug.Log(left + " " + right + " " + float.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_BandPassFilter)));
         double[] g = GetFilterDaiTong(left / 5000 * Math.PI, right / 5000 * Math.PI, out int num);
+        //double[] g = GetFilterDaiTong(0.01 * Math.PI, 10 * Math.PI, out int num);
         double[] res = Convolution(data, g);
-        return res;
 
-        //res就是为最后处理完成的值
-        //double[] s = new double[res.Length - num + 1];
-        //for (int i = 0; i < res.Length - num; i++)
+        //Debug.Log(res.Length+" "+g.Length);
+        //for(int i = 0; i <= data.Length - 1; i++)
         //{
-        //    s[i] = res[i + (num - 1) / 2];
+        //    str += data[i] + " ";
+        //    str2 += res[i] + " ";
+        //    //Debug.Log("data:" + data[i] + " " + res[i]);
         //}
+        //Debug.Log("da:" + str);
+        //Debug.Log("re:" + str2);
+        return res;
     }
     /// <summary>
     /// 以汉宁窗的方式获得带通滤波结果

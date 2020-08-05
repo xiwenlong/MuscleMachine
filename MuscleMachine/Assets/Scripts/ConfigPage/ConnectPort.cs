@@ -6,23 +6,24 @@
 	功能：链接端口
 *****************************************************/
 
-using UnityEngine;
-using System.IO.Ports;
-using UnityEngine.UI;
-using System.Collections.Generic;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Threading;
+using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// 接收到的数据
 /// </summary>
 public class ReceiveData
 {
-    public static List<int> ReceiveDataList = new List<int>();
-    public static List<int> DealDataList = new List<int>();
+    public static List<List<int>> ReceiveDataList = new List<List<int>>();
+    public static List<List<int>> DealDataList = new List<List<int>>();
+    public static List<byte> WaitForDealList = new List<byte>();
 }
 
-public class ConnectPort : MonoBehaviour 
+public class ConnectPort : MonoBehaviour
 {
     public static ConnectPort _instance;
     public static ConnectPort Instance
@@ -47,6 +48,11 @@ public class ConnectPort : MonoBehaviour
     {
         _connectBtn = GetComponentInChildren<Button>();
         _connectBtn.onClick.AddListener(() => Connect());
+        for (int i = 0; i <= 5; i++)
+        {
+            ReceiveData.ReceiveDataList.Add(new List<int>());
+            ReceiveData.DealDataList.Add(new List<int>());
+        }
     }
 
     private void OnEnable()
@@ -55,7 +61,7 @@ public class ConnectPort : MonoBehaviour
         _dropDown.options.Clear();
         string[] portsName = GetPortsName();
         List<string> portsNameLst = new List<string>();
-        for(int i = 0; i<= portsName.Length - 1; i++)
+        for (int i = 0; i <= portsName.Length - 1; i++)
         {
             portsNameLst.Add(portsName[i]);
         }
@@ -102,7 +108,10 @@ public class ConnectPort : MonoBehaviour
         SerialPort.Dispose();
         _receiveThread.Abort();
         //_receiveThread = null;
-        ReceiveData.ReceiveDataList.Clear();
+        for (int i = 0; i <= ReceiveData.ReceiveDataList.Count - 1; i++)
+        {
+            ReceiveData.ReceiveDataList[i].Clear();
+        }
 
         //调整按钮功能
         _connectBtn.GetComponentInChildren<Text>().text = "Connect";
@@ -120,24 +129,80 @@ public class ConnectPort : MonoBehaviour
             if (SerialPort.IsOpen)
             {
                 byte[] data = new byte[SerialPort.BytesToRead];   //定义缓冲区，因为串口事件触发时有可能收到不止一个字节
-                //_serialPort.Read(data, 0, data.Length);
+                //byte[] data = new byte[64];   //定义缓冲区，因为串口事件触发时有可能收到不止一个字节
                 SerialPort.Read(data, 0, data.Length);
-                List<int> receiveDataList = new List<int>();
-                //添加到
-                for (int i = 0; i <= data.Length - 1; i++)
+                //Debug.Log("长度：" + data.Length);
+                //List<int> receiveDataList = new List<int>();
+
+                ReceiveData.WaitForDealList.AddRange(data);
+
+                int minLeft = 1000, maxRight = 0;
+                //string str = "";
+                //String str2 = "";
+                //for (int i = 0; i <= ReceiveData.WaitForDealList.Count - 1; i++)
+                //{
+                //    str += ReceiveData.WaitForDealList[i].ToString("X2") + " ";
+                //    str2 += ReceiveData.WaitForDealList[i] + " ";
+                //}
+                //Debug.Log(str);
+                //Debug.Log(str2);
+                for (int i = 0; i <= ReceiveData.WaitForDealList.Count - 1; i++)
                 {
-                    string hexData = data[i].ToString("X2");
-                    if (hexData.Equals("FA") || hexData.Equals("AF") || hexData.Equals("0E"))
-                        continue;
-                    receiveDataList.Add(data[i]);
+                    //找到FA，AF
+                    int left = 0, right = 0;
+                    int j = i;
+                    for (; j <= ReceiveData.WaitForDealList.Count - 1; j++)
+                    {
+                        if (ReceiveData.WaitForDealList[j].ToString("X2").Equals("FA"))
+                        {
+                            left = j;
+                            //Debug.Log("左边：" + left);
+                        }
+                        if (ReceiveData.WaitForDealList[j].ToString("X2").Equals("AF") && left != 0 && j > left)
+                        {
+                            right = j;
+                            //Debug.Log("右边：" + right);
+                        }
+                        if (left != 0 && right != 0) break;
+                    }
+                    //找到了
+                    if (left != 0 && right != 0)
+                    {
+                        minLeft = minLeft <= left ? minLeft : left;
+                        maxRight = maxRight >= right ? maxRight : right;
+                        //Debug.Log(left + " " + right);
+                        //i = j;  //下一次掠过已经找到的部分
+                        int k = 0;
+                        //加2，舍去FA,0E
+                        //Debug.Log(left + 2 + 11);
+                        for (i = left + 2; i <= right - 3; i++)
+                        {
+                            try
+                            {
+                                if (ReceiveData.ReceiveDataList[(k++) / 2].Count >= 1001) continue;
+                                ReceiveData.ReceiveDataList[(k - 1) / 2].Add(ReceiveData.WaitForDealList[i]);
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.Log(e + " i:" + i + " RE" + ReceiveData.WaitForDealList.Count
+                                    + "k:" + (k - 1));
+                            }
+                            k %= 12;
+                            //Debug.Log(i + "-" + (k - 1) + ":" + ((k - 1) / 2) + " " + ReceiveData.WaitForDealList[i] + " " + ReceiveData.WaitForDealList[i].ToString("X2"));
+                        }
+                        i = j;  //下一次掠过已经找到的部分,大循环自己++，所以这边不用加
+                    }
                 }
-                //数组超过一定长度，删除掉左侧数据
-                if (receiveDataList.Count >= 64)
-                {
-                    receiveDataList.RemoveRange(0, receiveDataList.Count - 64);
-                }
-                ReceiveData.ReceiveDataList = receiveDataList;
-                //ReceiveData.DealDataList.AddRange(receiveDataList);
+                //Debug.Log(ReceiveData.WaitForDealList.Count + " " + (maxRight + 1));
+                if(maxRight>0)
+                    ReceiveData.WaitForDealList.RemoveRange(0, maxRight + 1);
+
+                //str = "";
+                //for(int i = 0;i <= ReceiveData.ReceiveDataList[0].Count - 1; i++)
+                //{
+                //    str += ReceiveData.ReceiveDataList[0][i] + " ";
+                //}
+                //Debug.Log("re:"+str);
                 Thread.Sleep(18);
             }
         }

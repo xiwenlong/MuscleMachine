@@ -23,9 +23,9 @@ public class ConfigPage : MonoBehaviour
 
     private void ClickSettingBtn()
     {
+        SetString();
         GameObject.Find(ConstTable.Instance.R_canvas).transform.GetChild(0).gameObject.SetActive(false);
         GameObject.Find(ConstTable.Instance.R_canvas).transform.GetChild(1).gameObject.SetActive(true);
-        SetString();
     }
 
     private void SetString()

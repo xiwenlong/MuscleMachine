@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\ConstTable.cs" />
     <Compile Include="Assets\Scripts\Hanning.cs" />
     <Compile Include="Assets\Scripts\RecordPage\AudioVisualization.cs" />
+    <Compile Include="Assets\Scripts\RecordPage\ChannelControl.cs" />
     <Compile Include="Assets\Scripts\RecordPage\ExportDataToExcel.cs" />
     <Compile Include="Assets\Scripts\RecordPage\MovieRecord.cs" />
     <Compile Include="Assets\Scripts\RecordPage\RecordPageBtns.cs" />
@@ -74,19 +75,19 @@
     <Compile Include="Assets\Scripts\UnitImpulseReact.cs" />
     <Compile Include="Assets\Scripts\WindowMaxAndMin.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.PackageManagerUI.Editor">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.CollabProxy.Editor">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.DataPrivacy">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Library/ScriptAssemblies/Unity.Analytics.DataPrivacy.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Library/ScriptAssemblies/Unity.Analytics.DataPrivacy.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>E:/SoftWare/GameSoftWare/Unity/UnityHub/2018.3.14f1/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
@@ -290,34 +291,34 @@
       <HintPath>E:/SoftWare/GameSoftWare/Unity/UnityHub/2018.3.14f1/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Assets/Plugin/EPPlus.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Assets/Plugin/EPPlus.dll</HintPath>
     </Reference>
     <Reference Include="I18N.CJK">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Assets/Plugin/I18N.CJK.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Assets/Plugin/I18N.CJK.dll</HintPath>
     </Reference>
     <Reference Include="I18N">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Assets/Plugin/I18N.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Assets/Plugin/I18N.dll</HintPath>
     </Reference>
     <Reference Include="I18N.MidEast">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Assets/Plugin/I18N.MidEast.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Assets/Plugin/I18N.MidEast.dll</HintPath>
     </Reference>
     <Reference Include="I18N.Other">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Assets/Plugin/I18N.Other.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Assets/Plugin/I18N.Other.dll</HintPath>
     </Reference>
     <Reference Include="I18N.Rare">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Assets/Plugin/I18N.Rare.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Assets/Plugin/I18N.Rare.dll</HintPath>
     </Reference>
     <Reference Include="I18N.West">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Assets/Plugin/I18N.West.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Assets/Plugin/I18N.West.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.Editor">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Editor.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.StandardEvents">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.StandardEvents.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.StandardEvents.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.Tracker">
-      <HintPath>F:/Study/selfGame/Game/MuscleMachine/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Tracker.dll</HintPath>
+      <HintPath>F:/Study/GitLab/MuscleMachine/MuscleMachine/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Tracker.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib">
       <HintPath>E:/SoftWare/GameSoftWare/Unity/UnityHub/2018.3.14f1/Editor/Data/MonoBleedingEdge/lib/mono/4.7.1-api/mscorlib.dll</HintPath>

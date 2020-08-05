@@ -104,14 +104,15 @@ public class ExportDataToExcel : MonoBehaviour
                 worksheet.Cells[1, 8].Value = "时间";
                 worksheet.Cells[2, 8].Value = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
 
-                //for (int i = 2; i <= 7; i++)
-                //{
-                for (int j = 0; j <= ReceiveData.DealDataList.Count - 1; j++)
+                for (int i = 0; i <= 5; i++)
                 {
-                    worksheet.Cells[j + 2, 1].Value = j + 1;
-                    worksheet.Cells[j + 2, 2].Value = ReceiveData.DealDataList[j];
+                    for (int j = 0; j <= ReceiveData.DealDataList[i].Count - 1; j++)
+                    {
+                        worksheet.Cells[j + 2, 1].Value = j + 1;
+                        worksheet.Cells[j + 2, i+2].Value = ReceiveData.DealDataList[i][j];
+                    }
+                    ReceiveData.DealDataList[i].Clear();
                 }
-                ReceiveData.DealDataList.Clear();
                 //}
 
                 ////直接指定单元格进行赋值              

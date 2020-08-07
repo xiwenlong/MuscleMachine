@@ -18,9 +18,11 @@ using UnityEngine.UI;
 /// </summary>
 public class ReceiveData
 {
-    public static List<List<int>> ReceiveDataList = new List<List<int>>();
-    public static List<List<int>> DealDataList = new List<List<int>>();
-    public static List<byte> WaitForDealList = new List<byte>();
+    public static int ChannelCount;
+    public static List<List<int>> ReceiveDataList = new List<List<int>>();   //接受用
+    public static List<List<int>> DealDataList = new List<List<int>>();      //导出用
+    public static List<byte> WaitForDealList = new List<byte>();             //接受的缓存用
+    public static List<List<int>> RecordDataList = new List<List<int>>();    //录制用
 }
 
 public class ConnectPort : MonoBehaviour
@@ -52,6 +54,7 @@ public class ConnectPort : MonoBehaviour
         {
             ReceiveData.ReceiveDataList.Add(new List<int>());
             ReceiveData.DealDataList.Add(new List<int>());
+            ReceiveData.RecordDataList.Add(new List<int>());
         }
     }
 
@@ -98,6 +101,13 @@ public class ConnectPort : MonoBehaviour
         _connectBtn.GetComponentInChildren<Text>().text = "Disconnect";
         _connectBtn.onClick.RemoveAllListeners();
         _connectBtn.onClick.AddListener(() => DisConnect());
+
+        for (int i = 0; i <= ReceiveData.ReceiveDataList.Count - 1; i++)
+        {
+            ReceiveData.DealDataList[i].Clear();
+        }
+
+        //SaveWavFile.Save();
     }
 
     public void DisConnect()
@@ -107,16 +117,21 @@ public class ConnectPort : MonoBehaviour
         SerialPort.Close();
         SerialPort.Dispose();
         _receiveThread.Abort();
-        //_receiveThread = null;
+        _receiveThread = null;
+
         for (int i = 0; i <= ReceiveData.ReceiveDataList.Count - 1; i++)
         {
             ReceiveData.ReceiveDataList[i].Clear();
+            ReceiveData.RecordDataList[i].Clear();
         }
+        ReceiveData.WaitForDealList.Clear();
 
         //调整按钮功能
         _connectBtn.GetComponentInChildren<Text>().text = "Connect";
         _connectBtn.onClick.RemoveAllListeners();
         _connectBtn.onClick.AddListener(() => Connect());
+
+
     }
 
     /// <summary>
@@ -179,7 +194,7 @@ public class ConnectPort : MonoBehaviour
                         {
                             try
                             {
-                                if (ReceiveData.ReceiveDataList[(k++) / 2].Count >= 1001) continue;
+                                if (ReceiveData.ReceiveDataList[(k++) / 2].Count >= 961) continue;
                                 ReceiveData.ReceiveDataList[(k - 1) / 2].Add(ReceiveData.WaitForDealList[i]);
                             }
                             catch (Exception e)
@@ -194,16 +209,11 @@ public class ConnectPort : MonoBehaviour
                     }
                 }
                 //Debug.Log(ReceiveData.WaitForDealList.Count + " " + (maxRight + 1));
-                if(maxRight>0)
+                if (maxRight > 0)
                     ReceiveData.WaitForDealList.RemoveRange(0, maxRight + 1);
 
-                //str = "";
-                //for(int i = 0;i <= ReceiveData.ReceiveDataList[0].Count - 1; i++)
-                //{
-                //    str += ReceiveData.ReceiveDataList[0][i] + " ";
-                //}
-                //Debug.Log("re:"+str);
                 Thread.Sleep(18);
+
             }
         }
         Thread.Sleep(30);

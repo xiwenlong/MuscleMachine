@@ -12,11 +12,11 @@ using System.Runtime.InteropServices;
 using UnityEngine.Networking;
 using System.Collections;
 using UnityEngine.Video;
+using System;
 
 public class RecordPageBtns : MonoBehaviour
 {
     public Sprite[] PlayOrPuseImage;
-    public GameObject VideoImage;
 
     public Button _configBtn;
     public Button _exportBtn;
@@ -25,9 +25,9 @@ public class RecordPageBtns : MonoBehaviour
     public Button _playBtn;
     public Button _refreshBtn;
     public Button _exitBtn;
-    private VideoPlayer _videoPlayer;
     private RawImage _rawImage;
     private bool _isPlay;
+    private bool _isDraw;
 
     private void Start()
     {
@@ -42,12 +42,9 @@ public class RecordPageBtns : MonoBehaviour
 
         _configBtn.onClick.AddListener(() => JumptIntoConfigPage());
         _importBtn.onClick.AddListener(() => ImportMovie());
-        _playBtn.onClick.AddListener(() => PlayVideo());
+        _playBtn.onClick.AddListener(() => BeginDraw());
         _refreshBtn.onClick.AddListener(() => RefreshVideo());
         _exitBtn.onClick.AddListener(() => ExitVideo());
-
-        _videoPlayer = VideoImage.GetComponent<VideoPlayer>();
-        _rawImage = VideoImage.GetComponent<RawImage>();
     }
 
     /// <summary>
@@ -84,7 +81,7 @@ public class RecordPageBtns : MonoBehaviour
         OpenFileName pth = new OpenFileName();
         pth.structSize = Marshal.SizeOf(pth);
         //pth.filter = "All files (*.*)|*.*";
-        pth.filter = "MP4 files (*.mp4)\0*.mp4";
+        pth.filter = "WAV files (*.wav)\0*.wav";
         //pth.filter = "Excel文件(*.xlsx)\0*.xlsx";
         pth.file = new string(new char[256]);
         pth.maxFile = pth.file.Length;
@@ -103,9 +100,28 @@ public class RecordPageBtns : MonoBehaviour
         }
         if (filePath != "")
         {
-            _videoPlayer.url = filePath;
+            _isPlay = true;
+            _isDraw = true;
+            WAVReader wav = new WAVReader();
+            wav.ReadWavFile(filePath);
+
             InvalidOtherBtn();
-            VideoImage.SetActive(true);
+            //Debug.Log("载入");
+            Invoke("DrawWavData", 0.5f);
+        }
+    }
+
+    private void DrawWavData()
+    {
+        //Debug.Log("调用");
+        for(int i = 0;i <= 5; i++)
+        {
+            transform.parent.Find("Channel").GetChild(i).gameObject.SetActive(false);
+        }
+        for (int i = 0; i <= ReceiveData.ChannelCount - 1; i++)
+        {
+            transform.parent.Find("Channel").GetChild(i).gameObject.SetActive(true);
+            transform.parent.Find("Channel").GetChild(i).GetComponentInChildren<AudioVisualization>().BeginDrawWavData();
         }
     }
 
@@ -118,11 +134,6 @@ public class RecordPageBtns : MonoBehaviour
         _importBtn.gameObject.SetActive(false);
         _configBtn.gameObject.SetActive(false);
         _exportBtn.gameObject.SetActive(false);
-        for (int i = 0; i <= transform.parent.childCount - 1; i++)
-        {
-            transform.parent.GetChild(i).gameObject.SetActive(false);
-        }
-        gameObject.SetActive(true);
     }
 
     /// <summary>
@@ -134,47 +145,60 @@ public class RecordPageBtns : MonoBehaviour
         _importBtn.gameObject.SetActive(true);
         _configBtn.gameObject.SetActive(true);
         _exportBtn.gameObject.SetActive(true);
-        for (int i = 0; i <= transform.parent.childCount - 1; i++)
-        {
-            transform.parent.GetChild(i).gameObject.SetActive(true);
-        }
     }
 
-    private void Update()
-    {
-        if (_videoPlayer.texture == null) return;
 
-        _rawImage.texture = _videoPlayer.texture;
-    }
-
-    private void PlayVideo()
+    private void BeginDraw()
     {
-        if (VideoImage.activeSelf == true && !_isPlay)
+        if (_isDraw)
         {
-            _videoPlayer.Play();
-            _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[1];
-            _isPlay = !_isPlay;
-        }
-        else if(VideoImage.activeSelf == true && _isPlay)
-        {
-            _videoPlayer.Pause();
-            _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[0];
-            _isPlay = !_isPlay;
+            if (!_isPlay)
+            {
+                _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[0];
+                _isPlay = true;
+                for (int i = 0; i <= ReceiveData.ChannelCount - 1; i++)
+                {
+                    transform.parent.Find("Channel").GetChild(i).GetComponentInChildren<AudioVisualization>().ContinueDrawData();
+                }
+            }
+            else if (_isPlay)
+            {
+                _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[1];
+                _isPlay = false;
+                for (int i = 0; i <= ReceiveData.ChannelCount - 1; i++)
+                {
+                    transform.parent.Find("Channel").GetChild(i).GetComponentInChildren<AudioVisualization>().PauseDrawData();
+                }
+            }
         }
     }
 
     private void ExitVideo()
     {
-        if (VideoImage.activeSelf == true)
+        if (_isDraw)
         {
+            _isDraw = false;
+            _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[0];
+            _isPlay = false;
             ValidOtherBtn();
-            VideoImage.SetActive(false);
+            StopAllCoroutines();
+            for (int i = 0; i <= ReceiveData.ChannelCount - 1; i++)
+            {
+                transform.parent.Find("Channel").GetChild(i).GetComponentInChildren<AudioVisualization>().StopDrawData();
+            }
         }
     }
 
     private void RefreshVideo()
     {
-        if (VideoImage.activeSelf == true)
-            _videoPlayer.time = 0;
+        if (_isDraw)
+        {
+            _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[1];
+            _isPlay = false;
+            for (int i = 0; i <= ReceiveData.ChannelCount - 1; i++)
+            {
+                transform.parent.Find("Channel").GetChild(i).GetComponentInChildren<AudioVisualization>().RefreshDrawData();
+            }
+        }
     }
 }

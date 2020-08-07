@@ -70,7 +70,9 @@
     <Compile Include="Assets\Scripts\RecordPage\ChannelControl.cs" />
     <Compile Include="Assets\Scripts\RecordPage\ExportDataToExcel.cs" />
     <Compile Include="Assets\Scripts\RecordPage\MovieRecord.cs" />
+    <Compile Include="Assets\Scripts\RecordPage\ReadWavFile.cs" />
     <Compile Include="Assets\Scripts\RecordPage\RecordPageBtns.cs" />
+    <Compile Include="Assets\Scripts\RecordPage\SaveWavFile.cs" />
     <Compile Include="Assets\Scripts\StartSoftWare.cs" />
     <Compile Include="Assets\Scripts\UnitImpulseReact.cs" />
     <Compile Include="Assets\Scripts\WindowMaxAndMin.cs" />

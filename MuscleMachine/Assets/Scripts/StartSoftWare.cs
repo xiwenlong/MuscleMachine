@@ -35,7 +35,7 @@ public class StartSoftWare : MonoBehaviour
 
     private IEnumerator FadeOut()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(4f);
         gameObject.SetActive(false);
     }
 }

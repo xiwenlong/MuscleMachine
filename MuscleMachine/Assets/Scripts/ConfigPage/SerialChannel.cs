@@ -17,8 +17,8 @@ using UnityEngine.EventSystems;
 public class SerialChannelConfig
 {
     public static Color[] SerialChannelColor =
-        new Color[] { Color.red,Color.yellow,Color.green,
-                      Color.gray, Color.blue, Color.cyan,Color.white};
+        new Color[] { new Color(1,0.3f,0.3f,1),new Color(0.79f,0.75f,0.24f,1),new Color(0.23f,0.75f,0.23f,1),
+                      Color.gray, new Color(0.26f,0.26f,0.77f,1),new Color(0.4f,0.78f,0.78f),Color.white};
     public static string[] SerialChannelStr = new string[] { "Red", "Yellow", "Green", "Gray", "Blue", "Cyan", "White" };
     public static int[] SelectedColor = new int[] { 1,1,1,1,1,1,0};
 }

@@ -48,7 +48,6 @@ public class BandPassFilter : MonoBehaviour
         }
         //存储时，不能让两个值一样
         PlayerPrefs.SetString(ConstTable.Instance.R_P_BandPassFilter, left + "," + right);
-        //Debug.Log(PlayerPrefs.GetString(ConstTable.Instance.R_P_BandPassFilter));
     }
 
     private void ValueChangedLeft(float num)
@@ -57,7 +56,6 @@ public class BandPassFilter : MonoBehaviour
         if (int.Parse(_textHighInput.text) <= int.Parse(_textLowInput.text))
         {
             _sliderL.value = _sliderL.maxValue - int.Parse(_textLowInput.text) + 1;
-            //_textLowInput.text = _sliderL.value.ToString();
         }
         SavePlayerPrefs();
     }
@@ -68,7 +66,6 @@ public class BandPassFilter : MonoBehaviour
         if (int.Parse(_textLowInput.text) >= int.Parse(_textHighInput.text))
         {
             _sliderR.value = int.Parse(_textHighInput.text);
-            //_textHighInput.text = _sliderR.value.ToString();
         }
         SavePlayerPrefs();
 

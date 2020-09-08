@@ -11,7 +11,7 @@ using System.Collections;
 
 public class StartSoftWare : MonoBehaviour 
 {
-    private void Start()
+    private void Awake()
     {
         if (!PlayerPrefs.HasKey(ConstTable.Instance.R_P_BandPassFilter))
         {

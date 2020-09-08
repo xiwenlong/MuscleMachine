@@ -23,7 +23,7 @@ public class WaveTime : MonoBehaviour
     {
         if (Input.GetAxis("Mouse ScrollWheel") != 0)
         {
-            IntervalSlider.value += Input.GetAxis("Mouse ScrollWheel") * 20;
+            IntervalSlider.value += Input.GetAxis("Mouse ScrollWheel") * 200;
             transform.Find(R_SliderText).GetComponent<Text>().text = (int)IntervalSlider.value + "ms";
         }
     }

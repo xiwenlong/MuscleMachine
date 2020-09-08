@@ -61,11 +61,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\ConfigPage\BandPassFilter.cs" />
+    <Compile Include="Assets\Scripts\ConfigPage\ChannelNumber.cs" />
     <Compile Include="Assets\Scripts\ConfigPage\ConfigPage.cs" />
     <Compile Include="Assets\Scripts\ConfigPage\ConnectPort.cs" />
     <Compile Include="Assets\Scripts\ConfigPage\SerialChannel.cs" />
+    <Compile Include="Assets\Scripts\ConfigPage\SerialChannelControl.cs" />
     <Compile Include="Assets\Scripts\ConstTable.cs" />
     <Compile Include="Assets\Scripts\Hanning.cs" />
+    <Compile Include="Assets\Scripts\RecordPage\ArrowMove.cs" />
     <Compile Include="Assets\Scripts\RecordPage\AudioVisualization.cs" />
     <Compile Include="Assets\Scripts\RecordPage\ChannelControl.cs" />
     <Compile Include="Assets\Scripts\RecordPage\ExportDataToExcel.cs" />

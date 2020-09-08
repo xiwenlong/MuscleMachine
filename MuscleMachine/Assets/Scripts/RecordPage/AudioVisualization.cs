@@ -17,18 +17,18 @@ public class AudioVisualization : MonoBehaviour
 {
     //private readonly int R_linePoints = 64;             //一次显示64个点
     private readonly int R_audioDataLength = 14000;
-    private readonly string R_Img = "Img";
-    private readonly string R_ImgArrow = "Img/Img_Arrow";
-    private readonly string R_ImgPlus = "Img/Img_Plus";
-    private readonly string R_ImgMinus = "Img/Img_Minus";
+    //private readonly string R_Img = "Img";
+    private readonly string R_ImgArrow = "Img_Arrow";
+    private readonly string R_ImgPlus = "Img_Arrow/Img_Plus";
+    private readonly string R_ImgMinus = "Img_Arrow/Img_Minus";
 
     public Slider IntervalSlider;
     public Text IntervalSliderText;
+    public float OffsetY;                //画线时的y轴偏移
 
     private int _channelIndex;
     private float _scaleFactor;             //缩放系数
     private float _parentStartPosY;      //父物体射线起始y值
-    private float _offsetY;
     private AudioSource _audioSource;    //声源 
     private LineRenderer _linerenderer;  //画线  
     private Thread _dealThread;
@@ -64,7 +64,7 @@ public class AudioVisualization : MonoBehaviour
         int count = int.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_SerialChannelCount));
         count = 6;
         int middle = Mathf.CeilToInt(count / 2f);
-        _offsetY = 1.2f + (1.2f * (_channelIndex <= middle ? middle - _channelIndex : middle - _channelIndex));
+        OffsetY = 1.2f + (1.2f * (_channelIndex <= middle ? middle - _channelIndex : middle - _channelIndex));
         //_offsetY = 0;
         GameObject.Find(ConstTable.Instance.R_TextInfo).GetComponent<Text>().text = "";
 
@@ -76,14 +76,17 @@ public class AudioVisualization : MonoBehaviour
 
         //加载线条的材质
         string[] colorName = PlayerPrefs.GetString(ConstTable.Instance.R_P_SerialChannelColor).Split(',');
+        //Debug.Log(PlayerPrefs.GetString(ConstTable.Instance.R_P_SerialChannelColor));
         _linerenderer.material = Resources.Load<Material>(ConstTable.Instance.R_Material + "/" + colorName[_channelIndex - 1]);
 
         //画出基准线
-        LineRenderer parentLine = transform.parent.GetComponent<LineRenderer>();
-        parentLine.SetPosition(0, new Vector3(parentLine.GetPosition(0).x, _parentStartPosY + _offsetY, parentLine.GetPosition(0).z));
-        parentLine.SetPosition(1, new Vector3(parentLine.GetPosition(1).x, _parentStartPosY + _offsetY, parentLine.GetPosition(1).z));
-        parentLine.material = Resources.Load<Material>(ConstTable.Instance.R_Material + "/" + colorName[_channelIndex - 1]);
-        transform.parent.Find(R_Img).transform.position = new Vector3(0, parentLine.GetPosition(0).y, 0);
+        //LineRenderer parentLine = transform.parent.GetComponent<LineRenderer>();
+        //parentLine.SetPosition(0, new Vector3(parentLine.GetPosition(0).x, _parentStartPosY + OffsetY, parentLine.GetPosition(0).z));
+        //parentLine.SetPosition(1, new Vector3(parentLine.GetPosition(1).x, _parentStartPosY + OffsetY, parentLine.GetPosition(1).z));
+        //parentLine.material = Resources.Load<Material>(ConstTable.Instance.R_Material + "/" + colorName[_channelIndex - 1]);
+
+        //初始化箭头的位置
+        transform.parent.Find(R_ImgArrow).transform.position = new Vector3(transform.parent.Find(R_ImgArrow).transform.position.x, OffsetY, 0);
         //将脚本所挂载的gameobject向左移动，使得生成的物体中心正对摄像机 
         transform.position = new Vector3(-R_audioDataLength * 0.5f * 0.05f, transform.position.y, transform.position.z);
 
@@ -92,16 +95,16 @@ public class AudioVisualization : MonoBehaviour
         //初始化所有点的起始位置
         for (int i = 0; i <= R_audioDataLength - 1; i++)
         {
-            _linePointPosY[i] = _parentStartPosY + _offsetY;
+            _linePointPosY[i] = /*_parentStartPosY +*/ OffsetY;
             Vector3 startPos = new Vector3(transform.position.x + i * intervalX, _linePointPosY[i], _linePointZ);
             _linerenderer.SetPosition(i, startPos);
         }
         if (ConnectPort.Instance.IsReceiveData)
         {
-            StartCoroutine("Fixed");
+            StartCoroutine("ConnectData");
         }
 
-        GetDaiTongData();
+        //GetDaiTongData();
     }
 
     private void OnDisable()
@@ -117,19 +120,11 @@ public class AudioVisualization : MonoBehaviour
 
     private void ShowOrHideChangeBtn()
     {
-        //if (!_isShowChangeBtn)
-        //{
-            //_isShowChangeBtn = !_isShowChangeBtn;
+
             HideAllArrow();
             _plusBtn.gameObject.SetActive(true);
             _minusBtn.gameObject.SetActive(true);
-        //}
-        //else
-        //{
-        //    _isShowChangeBtn = !_isShowChangeBtn;
-        //    _plusBtn.gameObject.SetActive(false);
-        //    _minusBtn.gameObject.SetActive(false);
-        //}
+
     }
 
     private void HideAllArrow()
@@ -180,7 +175,7 @@ public class AudioVisualization : MonoBehaviour
 
                 //flagIndex = (flagIndex + 1) % (interval + 1);
                 Vector3 cubePos = new Vector3(posX,
-                    _parentStartPosY + _linePointPosY[k] * _scaleFactor + _offsetY,
+                    _parentStartPosY + _linePointPosY[k] * _scaleFactor + OffsetY,
                     _linerenderer.GetPosition(k).z);
                 //画线 
                 _linerenderer.SetPosition(k, cubePos);
@@ -194,14 +189,18 @@ public class AudioVisualization : MonoBehaviour
     /// 绘制波形
     /// </summary>
     /// <returns></returns>
-    private IEnumerator Fixed()
+    private IEnumerator ConnectData()
     {
         while (ConnectPort.Instance.IsReceiveData)
         {
             _isDraw = true;
-            //double[] OtherDataZH = ShowDaiTong();
-            double[] OtherDataZH = GetDaiTongData();
-            int[] DataListZH = DealPortData(OtherDataZH).ToArray();
+            double[] daiTong = GetDaiTongData();
+            //double[] DataListZH = GetDaiTongData();
+            int[] DataListZH = DealPortData(daiTong).ToArray();
+            //int[] data = ReceiveData.ReceiveDataList[_channelIndex - 1].ToArray();
+            //ReceiveData.ReceiveDataList[_channelIndex - 1].Clear();
+            //int[] DataListZH = DealPortData(data).ToArray();
+
             //int[] DataListZH = DealPortData(OtherDataZH).ToArray();
 
             int interval = 10;     //每次10个点向左移动
@@ -222,7 +221,7 @@ public class AudioVisualization : MonoBehaviour
                 {
                     float posX = rightPos - (R_audioDataLength - 2 - k) * intervalX;
                     _linePointPosY[k] = _linePointPosY[k + interval];
-                    Vector3 newPos = new Vector3(posX, _parentStartPosY + _linePointPosY[k] * _scaleFactor + _offsetY, _linePointZ);
+                    Vector3 newPos = new Vector3(posX, _parentStartPosY + _linePointPosY[k] * _scaleFactor + OffsetY, _linePointZ);
                     _linerenderer.SetPosition(k, newPos);
                 }
                 int flagIndex = 0;
@@ -234,13 +233,14 @@ public class AudioVisualization : MonoBehaviour
                     float posX = rightPos - (R_audioDataLength - 1 - k) * intervalX;
                     //_linePointPosY[k] = Mathf.Clamp((DataListZH[i + flagIndex] - 20f), -100, 100);
                     //Debug.Log((DataListZH[i + flagIndex]) + " " + (float)(DataListZH[i + flagIndex]));
-                    _linePointPosY[k] = (float)(DataListZH[i + flagIndex]) / 2f ;
+                    _linePointPosY[k] = (float)(DataListZH[i + flagIndex] /*- 10*/) /10f;
+                    //Debug.Log((float)(DataListZH[i + flagIndex]) + " " + (DataListZH[i + flagIndex]));
                     //Debug.Log((float)(DataListZH[i + flagIndex]) / 2f + " "+ (DataListZH[i + flagIndex]));
                     //Debug.Log(OtherDataZH[i + flagIndex] + " " + DataListZH[i + flagIndex]);
 
                     flagIndex = (flagIndex + 1) % (interval + 1);
                     Vector3 cubePos = new Vector3(posX,
-                        _parentStartPosY + _linePointPosY[k] * _scaleFactor + _offsetY,
+                        _parentStartPosY + _linePointPosY[k] * _scaleFactor + OffsetY,
                         _linerenderer.GetPosition(k).z);
                     //画线 
                     _linerenderer.SetPosition(k, cubePos);
@@ -286,7 +286,7 @@ public class AudioVisualization : MonoBehaviour
                 {
                     float posX = rightPos - (R_audioDataLength - 2 - k) * intervalX;
                     _linePointPosY[k] = _linePointPosY[k + interval];
-                    Vector3 newPos = new Vector3(posX, _parentStartPosY + _linePointPosY[k] * _scaleFactor + _offsetY, _linePointZ);
+                    Vector3 newPos = new Vector3(posX, _parentStartPosY + _linePointPosY[k] * _scaleFactor + OffsetY, _linePointZ);
                     _linerenderer.SetPosition(k, newPos);
                 }
                 int flagIndex = 0;
@@ -297,11 +297,11 @@ public class AudioVisualization : MonoBehaviour
 
                     float posX = rightPos - (R_audioDataLength - 1 - k) * intervalX;
                     //_linePointPosY[k] = Mathf.Clamp((data[i + flagIndex])/* / 10f*/, -100, 100);
-                    _linePointPosY[k] = (float)(data[i + flagIndex]) / 2f;
+                    _linePointPosY[k] = (float)(data[i + flagIndex] /*- 10*/) / 10f;
 
                     flagIndex = (flagIndex + 1) % (interval + 1);
                     Vector3 cubePos = new Vector3(posX,
-                        _parentStartPosY + _linePointPosY[k] * _scaleFactor + _offsetY,
+                        _parentStartPosY + _linePointPosY[k] * _scaleFactor + OffsetY,
                         _linerenderer.GetPosition(k).z);
                     //画线 
                     _linerenderer.SetPosition(k, cubePos);
@@ -333,6 +333,15 @@ public class AudioVisualization : MonoBehaviour
     {
         StartCoroutine("DrawWavData");
     }
+    public void PauseConnectData()
+    {
+        StopCoroutine("ConnectData");
+        _isDraw = false;
+    }
+    public void ContinueConnectData()
+    {
+        StartCoroutine("ConnectData");
+    }
     /// <summary>
     /// 停止画线，并清除所有点
     /// </summary>
@@ -360,7 +369,7 @@ public class AudioVisualization : MonoBehaviour
         //初始化所有点的起始位置
         for (int i = 0; i <= R_audioDataLength - 1; i++)
         {
-            _linePointPosY[i] = _parentStartPosY + _offsetY;
+            _linePointPosY[i] = _parentStartPosY + OffsetY;
             Vector3 startPos = new Vector3(transform.position.x + i * intervalX, _linePointPosY[i], _linePointZ);
             _linerenderer.SetPosition(i, startPos);
         }
@@ -552,7 +561,7 @@ public class AudioVisualization : MonoBehaviour
     {
         int i, j, n2, n, band, wn;
         double fl, fh, fs/*, freq*/;
-        double[] h=new double[100], c = new double[100], x = new double[300], y = new double[300];
+        double[] h=new double[200], c = new double[100], x = new double[300], y = new double[300];
         c[1] = 0.0;
 
         float left = float.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_BandPassFilter).Split(',')[0]);
@@ -563,9 +572,9 @@ public class AudioVisualization : MonoBehaviour
         //fs = 1000;
         //fl = 125 /fs;
         //fh = 300 / fs;
-        n = 32;
+        n = 199;
         band = 3;
-        wn = 4;
+        wn = 7;
 
         firWin(n, band, fl, fh, wn, ref h);
         //n2 = n / 2;
@@ -587,7 +596,7 @@ public class AudioVisualization : MonoBehaviour
     {
         //传输进来的数据
         int[] dataSerial = ReceiveData.ReceiveDataList[_channelIndex - 1].ToArray();
-        //int[] dataSerial = new int[] { 0, 0, 0, 83, 0, 83, 0, 83, 0, 82, 0, 82, 0, 82, 0, 82, 0, 81, 0, 81, 0, 81, 0, 81, 0, 80, 0, 80, 0, 79, 0, 79, 0, 79, 0, 79, 0, 79, 0, 79, 0, 78, 0, 78, 0, 78, 0, 78, 0, 77, 0, 76, 0, 76, 0, 76, 0, 76, 0, 76, 0, 75, 0, 75, 0, 75, 0, 75, 0, 74, 0, 74, 0, 73, 0, 73, 0, 73, 0, 73, 0, 72, 0, 71, 0, 71, 0, 71, 0, 71, 0, 71 };
+        ReceiveData.ReceiveDataList[_channelIndex - 1].Clear();
         //
         //int order = filterParameters.Length;
         //滤波后的数据
@@ -622,7 +631,7 @@ public class AudioVisualization : MonoBehaviour
             FIRResult[i] = sum;
             //Debug.Log("i:" + i + " 原值：" + dataSerial[i] + " 滤波：" + sum + " 变换："+ str);
         }
-        //for(int i = 0;i < FIRResult.Length; i++)
+        //for (int i = 0; i < FIRResult.Length; i++)
         //{
         //    str += dataSerial[i] + ",";
         //    str2 += FIRResult[i] + " ";

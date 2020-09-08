@@ -85,7 +85,7 @@ public class ConnectPort : MonoBehaviour
         //链接端口
         string portName = _dropDown.transform.Find(ConstTable.Instance.R_dropDownLabel).GetComponent<Text>().text;
         SerialPort = new SerialPort(portName);
-        SerialPort.BaudRate = 230400;  //波特率
+        SerialPort.BaudRate = 230400;        //波特率
         SerialPort.StopBits = StopBits.One;  //停止位
         SerialPort.DataBits = 8;             //数据位
         SerialPort.Parity = Parity.None;     //奇偶校验
@@ -106,8 +106,6 @@ public class ConnectPort : MonoBehaviour
         {
             ReceiveData.DealDataList[i].Clear();
         }
-
-        //SaveWavFile.Save();
     }
 
     public void DisConnect()
@@ -139,8 +137,11 @@ public class ConnectPort : MonoBehaviour
     /// </summary>
     private void ReceivePortData()
     {
+        //while (IsReceiveData)
+        int count = 0;
         while (IsReceiveData)
         {
+            count++;
             if (SerialPort.IsOpen)
             {
                 byte[] data = new byte[SerialPort.BytesToRead];   //定义缓冲区，因为串口事件触发时有可能收到不止一个字节
@@ -190,12 +191,17 @@ public class ConnectPort : MonoBehaviour
                         int k = 0;
                         //加2，舍去FA,0E
                         //Debug.Log(left + 2 + 11);
-                        for (i = left + 2; i <= right - 3; i++)
+                        for (i = left + 2; i <= right - 3; i+=2)
                         {
+                            //int temp = ReceiveData.WaitForDealList[i] * 100 + ReceiveData.WaitForDealList[i + 1];
+                            //Debug.Log(temp + " " + Convert.ToInt32("0x"+temp.ToString(), 16));
                             try
                             {
-                                if (ReceiveData.ReceiveDataList[(k++) / 2].Count >= 961) continue;
-                                ReceiveData.ReceiveDataList[(k - 1) / 2].Add(ReceiveData.WaitForDealList[i]);
+                                if (ReceiveData.ReceiveDataList[k++].Count >= 960) continue;
+
+                                ReceiveData.ReceiveDataList[k - 1].Add(Convert.ToInt32("0x" + ReceiveData.WaitForDealList[i].ToString("X2") + ReceiveData.WaitForDealList[i+1].ToString("X2"), 16));
+                                //if((k-1)==0)
+                                //Debug.Log((k - 1) + " " + "0x" + ReceiveData.WaitForDealList[i].ToString("X2") + ReceiveData.WaitForDealList[i + 1].ToString("X2") + " " + Convert.ToInt32("0x" + ReceiveData.WaitForDealList[i].ToString("X2") + ReceiveData.WaitForDealList[i + 1].ToString("X2"), 16) + " " + ReceiveData.ReceiveDataList[k - 1][ReceiveData.ReceiveDataList[k - 1].Count - 1] /*+ " " + ReceiveData.ReceiveDataList[k - 1].Count*/);
                             }
                             catch (Exception e)
                             {
@@ -217,5 +223,11 @@ public class ConnectPort : MonoBehaviour
             }
         }
         Thread.Sleep(30);
+    }
+
+    //16进制转10进制
+    private void HexToDec()
+    {
+
     }
 }

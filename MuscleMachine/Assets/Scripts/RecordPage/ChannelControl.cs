@@ -12,6 +12,7 @@ public class ChannelControl : MonoBehaviour
 {
     private void OnEnable()
     {
+        if (!ConnectPort.Instance.IsReceiveData) return;
         int count = int.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_SerialChannelCount));
 
         for (int i = 0;i <= count - 1; i++)

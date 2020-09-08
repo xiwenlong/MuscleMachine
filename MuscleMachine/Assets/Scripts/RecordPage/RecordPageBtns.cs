@@ -31,7 +31,7 @@ public class RecordPageBtns : MonoBehaviour
 
     private void Start()
     {
-        _isPlay = false;
+        _isPlay = true;
         _configBtn = transform.Find(ConstTable.Instance.R_configBtn).GetComponent<Button>();
         _exportBtn = transform.Find(ConstTable.Instance.R_exportBtn).GetComponent<Button>();
         _recordBtn = transform.Find(ConstTable.Instance.R_recordBtn).GetComponent<Button>();
@@ -168,6 +168,28 @@ public class RecordPageBtns : MonoBehaviour
                 for (int i = 0; i <= ReceiveData.ChannelCount - 1; i++)
                 {
                     transform.parent.Find("Channel").GetChild(i).GetComponentInChildren<AudioVisualization>().PauseDrawData();
+                }
+            }
+        }
+        else
+        {
+            int num = int.Parse(PlayerPrefs.GetString(ConstTable.Instance.R_P_SerialChannelCount));
+            if (!_isPlay)
+            {
+                _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[0];
+                _isPlay = true;
+                for (int i = 0; i <= num - 1; i++)
+                {
+                    transform.parent.Find("Channel").GetChild(i).GetComponentInChildren<AudioVisualization>().ContinueConnectData();
+                }
+            }
+            else if (_isPlay)
+            {
+                _playBtn.GetComponent<Image>().sprite = PlayOrPuseImage[1];
+                _isPlay = false;
+                for (int i = 0; i <= num - 1; i++)
+                {
+                    transform.parent.Find("Channel").GetChild(i).GetComponentInChildren<AudioVisualization>().PauseConnectData();
                 }
             }
         }

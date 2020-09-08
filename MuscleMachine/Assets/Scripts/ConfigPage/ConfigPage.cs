@@ -40,7 +40,7 @@ public class ConfigPage : MonoBehaviour
         PlayerPrefs.SetString(ConstTable.Instance.R_P_NotchFilter, str);
 
         //保存所选择的通道数
-        str = transform.Find(ConstTable.Instance.R_ChannelNumber + "/Dropdown").GetComponentInChildren<Text>().text;
-        PlayerPrefs.SetString(ConstTable.Instance.R_P_SerialChannelCount, str);
+        //str = transform.Find(ConstTable.Instance.R_ChannelNumber + "/Dropdown").GetComponentInChildren<Text>().text;
+        //PlayerPrefs.SetString(ConstTable.Instance.R_P_SerialChannelCount, str);
     }
 }

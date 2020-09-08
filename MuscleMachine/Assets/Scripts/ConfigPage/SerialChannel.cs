@@ -20,7 +20,7 @@ public class SerialChannelConfig
         new Color[] { new Color(1,0.3f,0.3f,1),new Color(0.79f,0.75f,0.24f,1),new Color(0.23f,0.75f,0.23f,1),
                       Color.gray, new Color(0.26f,0.26f,0.77f,1),new Color(0.4f,0.78f,0.78f),Color.white};
     public static string[] SerialChannelStr = new string[] { "Red", "Yellow", "Green", "Gray", "Blue", "Cyan", "White" };
-    public static int[] SelectedColor = new int[] { 1,1,1,1,1,1,0};
+    public static int[] SelectedColor = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 }
 
 public class SerialChannel : Dropdown
@@ -37,7 +37,21 @@ public class SerialChannel : Dropdown
     protected override void Start()
     {
         base.Start();
+    }
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
         SelectedIndex = transform.parent.GetSiblingIndex();
+        for (int i = 0; i <= SerialChannelConfig.SelectedColor.Length - 1; i++)
+        {
+            if (SerialChannelConfig.SelectedColor[i] == 0)
+            {
+                SelectedIndex = i;
+                break;
+            }
+        }
+        SerialChannelConfig.SelectedColor[SelectedIndex] = 1;
 
         //设置下拉框背景颜色
         SerialColor = SerialChannelConfig.SerialChannelColor[SelectedIndex];
@@ -118,6 +132,11 @@ public class SerialChannel : Dropdown
         SetString();
         //调用父类的隐藏方法
         Hide();
+    }
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        SerialChannelConfig.SelectedColor[SelectedIndex] = 0;
     }
 
     /// <summary>
